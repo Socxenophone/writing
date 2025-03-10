@@ -1,183 +1,273 @@
 <!DOCTYPE html>
 <html lang="en" class="fixedheight texroman">
 <head>
-    <meta charset="utf-8">
-    <title>Writing - Modern Markdown & LaTeX Editor</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="A modern, lightweight Markdown and LaTeX editor with real-time preview and mobile support. Perfect for technical writing and mathematical content.">
-    <meta name="keywords" content="markdown editor, latex editor, mathjax, technical writing, open source">
-    <meta property="og:type" content="website">
-    <meta property="og:title" content="Writing - Modern Markdown & LaTeX Editor">
-    <meta property="og:description" content="A modern, lightweight Markdown and LaTeX editor with real-time preview and mobile support.">
-    <link rel="icon" href="favicon.ico">
-    <link rel="canonical" href="https://yourdomain.com/writing-editor">
+<meta charset="utf-8">
+<title>Writing - Modern Markdown & LaTeX Editor</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A modern, lightweight in-browser text editor with Markdown and LaTeX support using MathJax. Perfect for technical writing and note-taking.">
+<meta name="keywords" content="Markdown Editor, LaTeX Editor, MathJax, Technical Writing, Note-taking">
+<meta name="author" content="Joseph Ernest">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✍️</text></svg>">
 
-    <style>
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #3498db;
-            --background-light: #ffffff;
-            --background-dark: #212121;
-            --text-light: #333333;
-            --text-dark: #f5f5f5;
-            --border-radius: 8px;
-            --transition-speed: 0.3s;
-        }
+<style>
+:root {
+  --primary: #2F80ED;
+  --bg-light: #FFFFFF;
+  --bg-dark: #1A1A1A;
+  --text-light: #333333;
+  --text-dark: #F5F5F5;
+  --border-light: #E0E0E0;
+  --border-dark: #404040;
+  --code-bg-light: #F8F8F8;
+  --code-bg-dark: #2D2D2D;
+  --transition: all 0.3s ease;
+}
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            outline: 0;
-            transition: background-color var(--transition-speed) ease;
-        }
+@font-face { font-family: texroman; src: url(cmunrm.otf); font-weight: 400; font-style: normal; }
+@font-face { font-family: texroman; src: url(cmunrb.otf); font-weight: 700; font-style: normal; }
 
-        html {
-            height: 100%;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
-            line-height: 1.6;
-        }
+* { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
-        body {
-            height: 100%;
-            background: var(--background-light);
-            color: var(--text-light);
-            display: flex;
-            flex-direction: column;
-        }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.6;
+  background: var(--bg-light);
+  color: var(--text-light);
+  transition: var(--transition);
+}
 
-        .editor-container {
-            display: flex;
-            flex: 1;
-            min-height: 100vh;
-            position: relative;
-            gap: 1rem;
-            padding: 1rem;
-        }
+.fixedheight { min-height: 100vh; }
 
-        #wmd-input, #wmd-preview {
-            flex: 1;
-            min-width: 300px;
-            padding: 1.5rem;
-            border-radius: var(--border-radius);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            height: calc(100vh - 2rem);
-        }
+.editor-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border-light);
+}
 
-        #wmd-input {
-            background: var(--background-light);
-            color: var(--text-light);
-            border: 2px solid #e0e0e0;
-            font-size: 16px;
-            resize: horizontal;
-            min-width: 45%;
-        }
+#wmd-input {
+  padding: 1.5rem;
+  font-size: 16px;
+  resize: none;
+  border: none;
+  background: var(--bg-light);
+  color: var(--text-light);
+  line-height: 1.6;
+  transition: var(--transition);
+}
 
-        #wmd-preview {
-            overflow-y: auto;
-            background: var(--background-light);
-            border: 2px solid #e0e0e0;
-        }
+#wmd-preview {
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: var(--bg-light);
+  transition: var(--transition);
+}
 
-        /* Mobile-first media queries */
-        @media (max-width: 768px) {
-            .editor-container {
-                flex-direction: column;
-                padding: 0.5rem;
-            }
+#wmd-input:focus { outline: none; box-shadow: inset 0 0 0 2px var(--primary); }
 
-            #wmd-input, #wmd-preview {
-                width: 100% !important;
-                height: 50vh;
-                resize: none;
-            }
-        }
+#wmd-preview code { background: var(--code-bg-light); padding: 0.2em 0.4em; border-radius: 3px; }
+#wmd-preview pre { background: var(--code-bg-light); padding: 1rem; border-radius: 4px; overflow-x: auto; margin: 1rem 0; }
+#wmd-preview blockquote { border-left: 4px solid var(--primary); padding: 0.5rem 1rem; margin: 1rem 0; background: rgba(47, 128, 237, 0.05); }
+#wmd-preview table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
+#wmd-preview th, #wmd-preview td { padding: 0.75rem; border: 1px solid var(--border-light); }
+#wmd-preview tr:nth-child(even) { background: var(--code-bg-light); }
+#wmd-preview img { max-width: 100%; height: auto; border-radius: 4px; }
 
-        /* Dark mode variables */
-        .dark-mode {
-            --background-light: var(--background-dark);
-            --text-light: var(--text-dark);
-        }
+.help-icon {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  width: 40px;
+  height: 40px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
 
-        /* Enhanced code blocks */
-        #wmd-preview pre {
-            background: rgba(0,0,0,0.05);
-            padding: 1rem;
-            border-radius: var(--border-radius);
-            margin: 1rem 0;
-            overflow-x: auto;
-        }
+.help-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--bg-light);
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  z-index: 1001;
+}
 
-        #wmd-preview code {
-            font-family: "Fira Code", "Consolas", monospace;
-            font-size: 0.9em;
-            padding: 0.2em 0.4em;
-            border-radius: 3px;
-        }
+.close-icon {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  cursor: pointer;
+  padding: 0.5rem;
+}
 
-        /* Modern buttons and interactions */
-        #helpicon {
-            position: fixed;
-            bottom: 1.5rem;
-            right: 1.5rem;
-            width: 40px;
-            height: 40px;
-            background: var(--secondary-color);
-            color: white;
-            border-radius: 50%;
-            display: grid;
-            place-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            z-index: 1000;
-        }
+.dark-mode {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
 
-        #help {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: min(90%, 700px);
-            background: var(--background-light);
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            padding: 2rem;
-            z-index: 1001;
-        }
+.dark-mode #wmd-input,
+.dark-mode #wmd-preview {
+  background: var(--bg-dark);
+  color: var(--text-dark);
+}
 
-        /* Accessibility improvements */
-        a:focus, button:focus {
-            outline: 2px solid var(--secondary-color);
-            outline-offset: 2px;
-        }
+.dark-mode #wmd-preview code,
+.dark-mode #wmd-preview pre { background: var(--code-bg-dark); }
+.dark-mode #wmd-preview th,
+.dark-mode #wmd-preview td { border-color: var(--border-dark); }
+.dark-mode #wmd-preview tr:nth-child(even) { background: rgba(255, 255, 255, 0.05); }
+.dark-mode .help-modal { background: var(--bg-dark); border: 1px solid var(--border-dark); }
 
-        /* Print optimizations */
-        @media print {
-            .editor-container { display: block; }
-            #wmd-input { display: none; }
-            #helpicon { display: none; }
-        }
-
-        /* Retain original mathjax styles */
-        .MathJax_Display { overflow: auto hidden !important; }
-        mjx-container[jax="CHTML"] { outline: none !important; }
-
-        /* Rest of original styles... */
-        /* [Keep all original styles here, updated with CSS variables where appropriate] */
-    </style>
+@media (max-width: 768px) {
+  .editor-container { grid-template-columns: 1fr; }
+  #wmd-input { border-right: none; border-bottom: 1px solid var(--border-light); }
+}
+</style>
 </head>
-<body>
-    <!-- Rest of original HTML structure -->
-    <!-- [Keep all original HTML elements and structure] -->
-    <!-- [Keep all original JavaScript code] -->
 
-    <!-- Updated script loading with async/defer -->
-    <script src="Markdown.Converter.js" defer></script>
-    <script src="Markdown.Sanitizer.js" defer></script>
-    <script src="Markdown.Editor.js" defer></script>
-    <script src="Markdown.Extra.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML-full" async></script>
-    <script src="mathjax-editing_writing.js" defer></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js" defer></script>
+<body class="fixedheight">
+<script src="Markdown.Converter.js"></script>
+<script src="Markdown.Sanitizer.js"></script>
+<script src="Markdown.Editor.js"></script>
+<script src="Markdown.Extra.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML-full"></script>
+<script src="mathjax-editing_writing.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<input type="file" id="openFileInput" hidden>
+<div class="editor-container">
+  <textarea id="wmd-input" class="wmd-input" spellcheck="false" placeholder="Write your Markdown here..."></textarea>
+  <div id="wmd-preview" class="wmd-preview"></div>
+</div>
+
+<button class="help-icon" aria-label="Open help">?</button>
+
+<div class="help-modal" hidden>
+  <button class="close-icon" aria-label="Close help">×</button>
+  <pre>
+[Writing Editor Documentation]
+
+<a href="https://github.com/josephernest/writing" target="_blank" rel="noopener">GitHub Repository</a>
+
+Keyboard Shortcuts:
+CTRL+D - Toggle layout
+CTRL+P - Print/Export PDF
+CTRL+S - Save as MD
+CTRL+SHIFT+O - Open file
+CTRL+SHIFT+L - Toggle LaTeX
+CTRL+SHIFT+D - Dark mode
+CTRL+SHIFT+R - Toggle font
+CTRL+SHIFT+H - Help
+
+Markdown Basics:
+# Heading
+**Bold** *Italic*
+[Link](url)
+![Image](url)
+- List item
+> Blockquote
+`code` and ```code blocks```
+
+LaTeX Support:
+Inline $x^2$ 
+Block $$e^{i\pi}+1=0$$
+  </pre>
+</div>
+
+<script>
+const state = {
+  mode: 0,
+  latexEnabled: localStorage.getItem("latex") !== "0",
+  darkMode: localStorage.getItem("darkmode") === "1",
+  latexInitialized: false
+};
+
+const elements = {
+  input: $('#wmd-input'),
+  preview: $('#wmd-preview'),
+  helpModal: $('.help-modal'),
+  body: $('body')
+};
+
+const toggleMathJax = (enabled) => {
+  if (enabled) {
+    if (!state.latexInitialized) {
+      MathJax.Hub.Config({/* Existing config */});
+      mjpd1.mathjaxEditing.prepareWmdForMathJax(editor, '', [["$", "$"]]);
+      state.latexInitialized = true;
+    }
+    MathJax.Hub.Queue(["Typeset", MathJax.Hub, "wmd-preview"]);
+  } else {
+    MathJax.Hub.queue.pending = 1;
+  }
+  editor.refreshPreview();
+};
+
+const toggleUI = () => {
+  elements.body.toggleClass('dark-mode', state.darkMode);
+  localStorage.setItem("darkmode", state.darkMode ? "1" : "0");
+};
+
+const handleFile = (file) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    elements.input.val(e.target.result);
+    editor.refreshPreview();
+  };
+  reader.readAsText(file);
+};
+
+elements.input.on('input', () => localStorage.setItem("writing", elements.input.val()));
+
+$(document)
+  .on('keydown', (e) => {
+    if (e.ctrlKey || e.metaKey) {
+      switch(e.key.toUpperCase()) {
+        case 'D': /* Layout toggle logic */ break;
+        case 'S': /* Save logic */ break;
+        case 'P': window.print(); break;
+        case 'H': elements.helpModal.show(); break;
+      }
+    }
+  })
+  .on('click', '.help-icon', () => elements.helpModal.show())
+  .on('click', '.close-icon', () => elements.helpModal.hide());
+
+$('#openFileInput').on('change', (e) => handleFile(e.target.files[0]));
+
+$(window)
+  .on('dragover', e => e.preventDefault())
+  .on('drop', e => {
+    e.preventDefault();
+    handleFile(e.originalEvent.dataTransfer.files[0]);
+  });
+
+const converter = Markdown.getSanitizingConverter();
+Markdown.Extra.init(converter);
+const editor = new Markdown.Editor(converter);
+const mjpd1 = new mjpd();
+
+toggleMathJax(state.latexEnabled);
+toggleUI();
+editor.run();
+
+if (localStorage.getItem("writing")) elements.input.val(localStorage.getItem("writing"));
+</script>
+
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-2312083-14"></script>
+<script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','UA-2312083-14');</script>
 </body>
 </html>
